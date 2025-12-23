@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Retell Webhook</title>
+</head>
+<body>
+    <h1>Retell Webhook Test</h1>
+    <button onclick="testWebhook()">Test Make.com Webhook</button>
+    <div id="result"></div>
+
+    <script>
+        async function testWebhook() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing webhook...';
+            
+            try {
+                const response = await fetch('https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        agent_id: 'agent_a4cb9032ec31e009d34b9be1a4'
+                    })
+                });
+                
+                const responseText = await response.text();
+                let parsedData;
+                
+                try {
+                    parsedData = JSON.parse(responseText);
+                } catch (e) {
+                    parsedData = { raw_response: responseText };
+                }
+                
+                resultDiv.innerHTML = `
+                    <h3>Response:</h3>
+                    <pre>${JSON.stringify(parsedData, null, 2)}</pre>
+                    <p>Status: ${response.status}</p>
+                    <p>Raw Response: ${responseText.substring(0, 100)}${responseText.length > 100 ? '...' : ''}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Retell Widget</title>
+    <style>
+        #retell-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #007cba;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 9999;
+            font-size: 22px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        #retell-panel {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 320px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        #retell-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        #retell-status {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #666;
+            background: #f8f9fa;
+        }
+
+        #retell-panel button {
+            width: calc(100% - 40px);
+            margin: 10px 20px;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #retell-start {
+            background: #007cba;
+            color: white;
+        }
+
+        #retell-end {
+            background: #dc3545;
+            color: white;
+        }
+
+        #retell-transcript {
+            font-size: 13px;
+            max-height: 150px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 15px 20px 20px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Retell Widget</h1>
+    <p>Click the floating button in the bottom-right corner to test the voice widget.</p>
+
+    <script>
+        const RETELL_CONFIG = {
+            makeWebhook: 'https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5',
+            agentId: 'agent_a4cb9032ec31e009d34b9be1a4'
+        };
+
+        // First, let's create the UI immediately to see if that works
+        function createUI() {
+            // Inject UI
+            const fab = document.createElement("div");
+            fab.id = "retell-fab";
+            fab.innerHTML = "💬";
+
+            const panel = document.createElement("div");
+            panel.id = "retell-panel";
+            panel.innerHTML = `
+                <div id="retell-header">
+                    <h4>Voice Assistant</h4>
+                    <button id="retell-close">×</button>
+                </div>
+                <div id="retell-status">Loading SDK...</div>
+                <button id="retell-start" disabled>Start Call</button>
+                <button id="retell-end" disabled>End Call</button>
+                <div id="retell-transcript"></div>
+            `;
+
+            document.body.appendChild(fab);
+            document.body.appendChild(panel);
+
+            // Basic event handlers
+            fab.onclick = () => {
+                panel.style.display = panel.style.display === "none" ? "block" : "none";
+            };
+
+            document.getElementById("retell-close").onclick = () => {
+                panel.style.display = "none";
+            };
+        }
+
+        // Create UI immediately
+        createUI();
+
+        // Try multiple SDK loading approaches
+        function loadRetellSDK() {
+            document.getElementById("retell-status").innerText = "Loading Retell SDK...";
+            
+            // Method 1: Try unpkg CDN
+            const script1 = document.createElement('script');
+            script1.src = 'https://unpkg.com/retell-client-js-sdk@latest/dist/retell-client-js-sdk.min.js';
+            script1.onload = () => {
+                console.log('SDK loaded from unpkg');
+                initializeRetellWidget();
+            };
+            script1.onerror = () => {
+                console.log('unpkg failed, trying jsdelivr');
+                // Method 2: Try jsdelivr CDN
+                const script2 = document.createElement('script');
+                script2.src = 'https://cdn.jsdelivr.net/npm/retell-client-js-sdk@latest/dist/retell-client-js-sdk.min.js';
+                script2.onload = () => {
+                    console.log('SDK loaded from jsdelivr');
+                    initializeRetellWidget();
+                };
+                script2.onerror = () => {
+                    console.log('jsdelivr failed, trying direct import');
+                    // Method 3: Try dynamic import
+                    import('https://cdn.skypack.dev/retell-client-js-sdk')
+                        .then(({ RetellWebClient }) => {
+                            window.RetellWebClient = RetellWebClient;
+                            console.log('SDK loaded from skypack');
+                            initializeRetellWidget();
+                        })
+                        .catch(err => {
+                            console.error('All SDK loading methods failed:', err);
+                            document.getElementById("retell-status").innerText = "Failed to load SDK";
+                        });
+                };
+                document.head.appendChild(script2);
+            };
+            document.head.appendChild(script1);
+        }
+
+        function initializeRetellWidget() {
+            try {
+                // Try different ways to access the SDK
+                let RetellWebClient;
+                
+                if (window.RetellSDK && window.RetellSDK.RetellWebClient) {
+                    RetellWebClient = window.RetellSDK.RetellWebClient;
+                } else if (window.RetellWebClient) {
+                    RetellWebClient = window.RetellWebClient;
+                } else if (window.Retell && window.Retell.RetellWebClient) {
+                    RetellWebClient = window.Retell.RetellWebClient;
+                } else {
+                    throw new Error('RetellWebClient not found in window object');
+                }
+
+                const client = new RetellWebClient();
+                let isCallActive = false;
+
+                document.getElementById("retell-status").innerText = "Ready to start call";
+                document.getElementById("retell-start").disabled = false;
+
+                document.getElementById("retell-start").onclick = async () => {
+                    try {
+                        document.getElementById("retell-status").innerText = "Connecting...";
+                        
+                        const res = await fetch(RETELL_CONFIG.makeWebhook, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (!res.ok) {
+                            throw new Error(`HTTP error! status: ${res.status}`);
+                        }
+                        
+                        const responseText = await res.text();
+                        let accessToken = responseText.trim();
+                        
+                        console.log('Access token received:', accessToken.substring(0, 20) + '...');
+
+                        await client.startCall({
+                            accessToken: accessToken,
+                            sampleRate: 24000,
+                            enableUpdate: true
+                        });
+
+                        document.getElementById("retell-start").disabled = true;
+                        document.getElementById("retell-end").disabled = false;
+                        document.getElementById("retell-status").innerText = "Call active";
+                        isCallActive = true;
+
+                    } catch (error) {
+                        console.error('Failed to start call:', error);
+                        document.getElementById("retell-status").innerText = "Failed to connect: " + error.message;
+                    }
+                };
+
+                document.getElementById("retell-end").onclick = () => {
+                    if (isCallActive) {
+                        client.stopCall();
+                    }
+                };
+
+                // Event listeners
+                client.on("call_started", () => {
+                    console.log("Call started");
+                    document.getElementById("retell-status").innerText = "Call connected";
+                    isCallActive = true;
+                });
+
+                client.on("call_ended", () => {
+                    console.log("Call ended");
+                    document.getElementById("retell-start").disabled = false;
+                    document.getElementById("retell-end").disabled = true;
+                    document.getElementById("retell-status").innerText = "Call ended";
+                    isCallActive = false;
+                });
+
+                client.on("agent_start_talking", () => {
+                    document.getElementById("retell-status").innerText = "Agent speaking...";
+                });
+
+                client.on("agent_stop_talking", () => {
+                    document.getElementById("retell-status").innerText = "Listening...";
+                });
+
+                client.on("update", (update) => {
+                    if (update.transcript && update.transcript.length > 0) {
+                        const transcriptDiv = document.getElementById("retell-transcript");
+                        const transcriptText = update.transcript
+                            .map(t => `${t.role}: ${t.content}`)
+                            .join('\n');
+                        transcriptDiv.innerText = transcriptText;
+                        transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+                    }
+                });
+
+                client.on("error", (error) => {
+                    console.error("Retell error:", error);
+                    document.getElementById("retell-status").innerText = "Error: " + error.message;
+                    isCallActive = false;
+                    document.getElementById("retell-start").disabled = false;
+                    document.getElementById("retell-end").disabled = true;
+                });
+
+            } catch (error) {
+                console.error('Failed to initialize Retell widget:', error);
+                document.getElementById("retell-status").innerText = "SDK initialization failed: " + error.message;
+            }
+        }
+
+        // Start loading when page is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadRetellSDK);
+        } else {
+            loadRetellSDK();
+        }
+    </script>
+</body>
+</html>
