@@ -246,10 +246,240 @@
 }
 
 /* Mobile responsiveness */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+  #retell-fab {
+    width: 56px;
+    height: 56px;
+    bottom: 16px;
+    right: 16px;
+    font-size: 22px;
+    /* Reduce floating animation on mobile for better performance */
+    animation: none;
+  }
+  
+  #retell-fab:active {
+    transform: scale(0.95);
+  }
+
   #retell-panel {
-    width: calc(100vw - 40px);
-    right: 20px;
-    left: 20px;
+    width: calc(100vw - 32px);
+    right: 16px;
+    left: 16px;
+    bottom: 80px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+
+  #retell-header {
+    padding: 16px 20px;
+  }
+
+  #retell-header-text h4 {
+    font-size: 16px;
+  }
+
+  #retell-header-text p {
+    font-size: 13px;
+  }
+
+  #retell-content {
+    padding: 24px 20px 20px;
+  }
+
+  #retell-instruction {
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
+
+  #retell-status-section {
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+
+  #retell-status-label,
+  #retell-status {
+    font-size: 13px;
+  }
+
+  #retell-call-button {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+
+  #retell-call-icon {
+    font-size: 16px;
+  }
+
+  #retell-transcript {
+    max-height: 150px;
+    font-size: 13px;
+    padding: 12px;
+  }
+
+  #retell-transcript-container {
+    margin-top: 20px;
+  }
+}
+
+/* Extra small screens (phones in portrait) */
+@media (max-width: 360px) {
+  #retell-fab {
+    width: 52px;
+    height: 52px;
+    bottom: 12px;
+    right: 12px;
+    font-size: 20px;
+  }
+
+  #retell-panel {
+    width: calc(100vw - 24px);
+    right: 12px;
+    left: 12px;
+    bottom: 72px;
+    border-radius: 16px;
+  }
+
+  #retell-header {
+    padding: 14px 16px;
+  }
+
+  #retell-header-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  #retell-content {
+    padding: 20px 16px 16px;
+  }
+
+  #retell-instruction {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  #retell-status-section {
+    padding: 10px 14px;
+    margin-bottom: 16px;
+  }
+
+  #retell-call-button {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  #retell-panel {
+    max-height: calc(100vh - 80px);
+    bottom: 60px;
+  }
+
+  #retell-content {
+    padding: 16px 20px 12px;
+  }
+
+  #retell-instruction {
+    margin-bottom: 16px;
+  }
+
+  #retell-status-section {
+    margin-bottom: 16px;
+  }
+
+  #retell-transcript {
+    max-height: 100px;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  #retell-fab:hover {
+    transform: none;
+    box-shadow: 0 8px 32px rgba(52, 125, 155, 0.3);
+  }
+
+  #retell-call-button:hover:not(:disabled) {
+    transform: none;
+  }
+
+  #retell-close:hover {
+    background: none;
+  }
+
+  /* Larger touch targets */
+  #retell-close {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  #retell-call-button {
+    min-height: 48px;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  #retell-fab {
+    box-shadow: 0 4px 16px rgba(52, 125, 155, 0.3);
+  }
+
+  #retell-panel {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  #retell-fab {
+    animation: none;
+  }
+
+  #retell-panel {
+    animation: none;
+  }
+
+  * {
+    transition: none !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  #retell-panel {
+    background: #1f2937;
+    color: #f9fafb;
+  }
+
+  #retell-instruction {
+    color: #9ca3af;
+  }
+
+  #retell-status-section {
+    background: #374151;
+  }
+
+  #retell-status-label {
+    color: #9ca3af;
+  }
+
+  #retell-status {
+    color: #f3f4f6;
+  }
+
+  #retell-transcript {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+  }
+
+  #retell-transcript::-webkit-scrollbar-track {
+    background: #4b5563;
+  }
+
+  #retell-transcript::-webkit-scrollbar-thumb {
+    background: #6b7280;
   }
 }

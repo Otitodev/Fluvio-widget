@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retell Universal Widget - Client Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .header h1 {
+            font-size: 3rem;
+            margin: 0 0 1rem 0;
+        }
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        .test-card {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+        .test-card:hover {
+            transform: translateY(-5px);
+        }
+        .test-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.3rem;
+        }
+        .test-card p {
+            margin: 0 0 1.5rem 0;
+            opacity: 0.9;
+        }
+        .btn {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .btn-primary {
+            background: #28a745;
+            border-color: #28a745;
+        }
+        .btn-primary:hover {
+            background: #218838;
+        }
+        .info-section {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+        .code-block {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .feature {
+            text-align: center;
+            padding: 1rem;
+        }
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎧 Retell Universal Widget</h1>
+            <p>Deploy voice assistants to any website with a single script tag</p>
+        </div>
+
+        <div class="info-section">
+            <h2>🚀 One-Line Deployment</h2>
+            <p>Add this script tag to any website and the voice assistant appears immediately:</p>
+            <div class="code-block">
+&lt;script src="retell-universal-widget.js" 
+        data-webhook="YOUR_WEBHOOK_URL"
+        data-agent-id="YOUR_AGENT_ID"&gt;&lt;/script&gt;
+            </div>
+        </div>
+
+        <h2>🧪 Live Test Examples</h2>
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>🔵 Basic Test</h3>
+                <p>Default blue widget with standard positioning and branding. Perfect for most websites.</p>
+                <a href="test-examples/basic-test.html" class="btn btn-primary">Test Basic Widget</a>
+            </div>
+
+            <div class="test-card">
+                <h3>🎨 Branded Test</h3>
+                <p>Custom orange branding with bottom-left positioning. Shows how to match company colors.</p>
+                <a href="test-examples/branded-test.html" class="btn btn-primary">Test Branded Widget</a>
+            </div>
+
+            <div class="test-card">
+                <h3>🛒 E-commerce Test</h3>
+                <p>Sales assistant widget positioned in top-right corner. Perfect for product pages.</p>
+                <a href="test-examples/ecommerce-test.html" class="btn btn-primary">Test E-commerce Widget</a>
+            </div>
+
+            <div class="test-card">
+                <h3>📱 Mobile Test</h3>
+                <p>Mobile-responsive design test. Resize your browser or use mobile device to test.</p>
+                <a href="test-examples/mobile-test.html" class="btn btn-primary">Test Mobile Widget</a>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2>✨ Key Features</h2>
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🌐</div>
+                    <h4>Universal Compatibility</h4>
+                    <p>Works on any platform</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📱</div>
+                    <h4>Mobile Responsive</h4>
+                    <p>Perfect on all devices</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎨</div>
+                    <h4>Fully Customizable</h4>
+                    <p>Brand colors & positioning</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Lightweight</h4>
+                    <p>No dependencies</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔧</div>
+                    <h4>Easy Deploy</h4>
+                    <p>One script tag</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🛡️</div>
+                    <h4>Robust</h4>
+                    <p>Multiple CDN fallbacks</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2>🎯 Perfect for Agencies</h2>
+            <ul>
+                <li><strong>Scale infinitely</strong> - Deploy to unlimited clients instantly</li>
+                <li><strong>Support any platform</strong> - WordPress, Shopify, Squarespace, Wix, custom sites</li>
+                <li><strong>30-second onboarding</strong> - Clients just paste one line of code</li>
+                <li><strong>Centralized updates</strong> - Update all clients by updating one file</li>
+                <li><strong>White-label ready</strong> - Fully brandable per client</li>
+            </ul>
+        </div>
+
+        <div class="info-section">
+            <h2>📋 Deployment Options</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <div>
+                    <h4>🚀 Netlify (Recommended)</h4>
+                    <p>Drag & drop deployment, instant live URL</p>
+                    <a href="hosting-options/netlify-deploy.md" class="btn">View Guide</a>
+                </div>
+                <div>
+                    <h4>📚 GitHub Pages</h4>
+                    <p>Free hosting with version control</p>
+                    <a href="hosting-options/github-pages.md" class="btn">View Guide</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

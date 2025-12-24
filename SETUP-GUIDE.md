@@ -2,21 +2,13 @@
 
 ## Quick Setup (5 Minutes)
 
-### Step 1: Download Plugin Files
-1. Create a folder called `retell-voice-agent`
-2. Copy these 3 files into the folder:
-   - `retell-voice-agent.php`
-   - `assets/retell.css`
-   - `assets/retell.js`
+### Step 1: Install WordPress Plugin
+1. Go to WordPress Admin → Plugins → Add New
+2. Click "Upload Plugin"
+3. Choose your zip file and click "Install Now"
+4. Click "Activate Plugin"
 
-### Step 2: Install WordPress Plugin
-1. Zip the `retell-voice-agent` folder
-2. Go to WordPress Admin → Plugins → Add New
-3. Click "Upload Plugin"
-4. Choose your zip file and click "Install Now"
-5. Click "Activate Plugin"
-
-### Step 3: Verify Installation
+### Step 2: Verify Installation
 1. Visit any page on your website
 2. You should see a blue floating chat bubble in the bottom-right corner
 3. Click it to open the voice assistant panel
@@ -48,13 +40,7 @@ The voice agent is now live on your website. Users can click the floating button
 
 ## Customization
 
-To change colors or styling, edit the `assets/retell.css` file and modify the `#347D9B` color values to your brand colors.
+I set the theme to match your brand colors `#347D9B`  
 
 ## Support
-
-The plugin uses:
-- **Retell AI** for voice processing
-- **Make.com** for secure token generation
-- **WordPress** for easy deployment
-
-All components are working and tested. The setup should take less than 5 minutes.
+If there  are any issues let me know

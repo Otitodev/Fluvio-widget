@@ -1,0 +1,710 @@
+/**
+ * Retell Universal Voice Widget
+ * Deploy to any website with a single script tag
+ * 
+ * Usage:
+ * <script src="https://your-domain.com/retell-universal-widget.js" 
+ *         data-webhook="https://hook.us2.make.com/your-webhook"
+ *         data-agent-id="agent_your_agent_id"></script>
+ */
+
+(function() {
+  'use strict';
+
+  // Configuration from script tag attributes
+  const currentScript = document.currentScript || document.querySelector('script[src*="retell-universal-widget"]');
+  const config = {
+    webhook: currentScript?.getAttribute('data-webhook') || '',
+    agentId: currentScript?.getAttribute('data-agent-id') || '',
+    color: currentScript?.getAttribute('data-color') || '#347D9B',
+    position: currentScript?.getAttribute('data-position') || 'bottom-right',
+    title: currentScript?.getAttribute('data-title') || 'Voice Assistant',
+    subtitle: currentScript?.getAttribute('data-subtitle') || 'Live Voice Agent'
+  };
+
+  // Prevent multiple instances
+  if (window.RetellWidgetLoaded) {
+    console.warn('Retell Widget already loaded');
+    return;
+  }
+  window.RetellWidgetLoaded = true;
+
+  console.log('🎧 Retell Universal Widget Loading...');
+
+  // Inject CSS styles
+  function injectStyles() {
+    const css = `
+      #retell-fab {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: ${config.color};
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 999999;
+        font-size: 24px;
+        box-shadow: 0 8px 32px rgba(52, 125, 155, 0.3);
+        transition: all 0.3s ease;
+        animation: retell-float 3s ease-in-out infinite;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        border: none;
+      }
+
+      #retell-fab:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 12px 40px rgba(52, 125, 155, 0.4);
+      }
+
+      @keyframes retell-float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+      }
+
+      #retell-panel {
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        width: 380px;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        z-index: 999999;
+        display: none;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+        animation: retell-slideUp 0.3s ease-out;
+      }
+
+      @keyframes retell-slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      #retell-header {
+        background: linear-gradient(135deg, ${config.color} 0%, ${config.color}dd 100%);
+        color: white;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      #retell-header-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      #retell-header-icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+
+      #retell-header-text h4 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+
+      #retell-header-text p {
+        margin: 2px 0 0 0;
+        font-size: 14px;
+        opacity: 0.9;
+        font-weight: 400;
+      }
+
+      #retell-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: background 0.2s ease;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #retell-close:hover {
+        background: rgba(255,255,255,0.1);
+      }
+
+      #retell-content {
+        padding: 32px 24px 24px;
+        text-align: center;
+      }
+
+      #retell-instruction {
+        color: #6B7280;
+        font-size: 16px;
+        margin-bottom: 32px;
+        line-height: 1.5;
+      }
+
+      #retell-status-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        padding: 16px 20px;
+        background: #F9FAFB;
+        border-radius: 12px;
+      }
+
+      #retell-status-label {
+        font-size: 14px;
+        color: #6B7280;
+        font-weight: 500;
+      }
+
+      #retell-status {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      #retell-status.offline {
+        color: #6B7280;
+      }
+
+      #retell-status.connecting {
+        color: #F59E0B;
+      }
+
+      #retell-status.online {
+        color: #10B981;
+      }
+
+      #retell-call-button {
+        width: 100%;
+        padding: 16px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: inherit;
+      }
+
+      #retell-call-button.start {
+        background: ${config.color};
+        color: white;
+      }
+
+      #retell-call-button.start:hover:not(:disabled) {
+        background: ${config.color}dd;
+        transform: translateY(-1px);
+      }
+
+      #retell-call-button.end {
+        background: #EF4444;
+        color: white;
+      }
+
+      #retell-call-button.end:hover:not(:disabled) {
+        background: #DC2626;
+        transform: translateY(-1px);
+      }
+
+      #retell-call-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      #retell-call-icon {
+        font-size: 18px;
+      }
+
+      #retell-transcript-container {
+        margin-top: 24px;
+        display: none;
+      }
+
+      #retell-transcript-container.show {
+        display: block;
+      }
+
+      #retell-transcript {
+        background: #F9FAFB;
+        border-radius: 12px;
+        padding: 16px;
+        max-height: 200px;
+        overflow-y: auto;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #374151;
+        white-space: pre-wrap;
+        border: 1px solid #E5E7EB;
+      }
+
+      /* Mobile responsiveness */
+      @media (max-width: 768px) {
+        #retell-fab {
+          width: 56px;
+          height: 56px;
+          bottom: 16px;
+          right: 16px;
+          font-size: 22px;
+          animation: none;
+        }
+
+        #retell-panel {
+          width: calc(100vw - 32px);
+          right: 16px;
+          left: 16px;
+          bottom: 80px;
+          max-height: calc(100vh - 120px);
+          overflow-y: auto;
+        }
+
+        #retell-header {
+          padding: 16px 20px;
+        }
+
+        #retell-content {
+          padding: 24px 20px 20px;
+        }
+
+        #retell-instruction {
+          font-size: 15px;
+          margin-bottom: 24px;
+        }
+      }
+
+      @media (max-width: 360px) {
+        #retell-fab {
+          width: 52px;
+          height: 52px;
+          bottom: 12px;
+          right: 12px;
+          font-size: 20px;
+        }
+
+        #retell-panel {
+          width: calc(100vw - 24px);
+          right: 12px;
+          left: 12px;
+          bottom: 72px;
+          border-radius: 16px;
+        }
+      }
+
+      /* Position variations */
+      .retell-position-bottom-left #retell-fab {
+        left: 20px;
+        right: auto;
+      }
+
+      .retell-position-bottom-left #retell-panel {
+        left: 20px;
+        right: auto;
+      }
+
+      .retell-position-top-right #retell-fab {
+        top: 20px;
+        bottom: auto;
+      }
+
+      .retell-position-top-right #retell-panel {
+        top: 100px;
+        bottom: auto;
+      }
+
+      .retell-position-top-left #retell-fab {
+        top: 20px;
+        left: 20px;
+        bottom: auto;
+        right: auto;
+      }
+
+      .retell-position-top-left #retell-panel {
+        top: 100px;
+        left: 20px;
+        bottom: auto;
+        right: auto;
+      }
+    `;
+
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  // Create widget UI
+  function createWidget() {
+    // Add position class to body
+    document.body.classList.add(`retell-position-${config.position}`);
+
+    // Create floating button
+    const fab = document.createElement('div');
+    fab.id = 'retell-fab';
+    fab.innerHTML = '💬';
+    fab.setAttribute('aria-label', 'Open voice assistant');
+    fab.setAttribute('role', 'button');
+    fab.setAttribute('tabindex', '0');
+
+    // Create panel
+    const panel = document.createElement('div');
+    panel.id = 'retell-panel';
+    panel.innerHTML = `
+      <div id="retell-header">
+        <div id="retell-header-content">
+          <div id="retell-header-icon">🎧</div>
+          <div id="retell-header-text">
+            <h4>${config.title}</h4>
+            <p>${config.subtitle}</p>
+          </div>
+        </div>
+        <button id="retell-close" aria-label="Close">×</button>
+      </div>
+      <div id="retell-content">
+        <div id="retell-instruction">
+          Tap the call button to start talking.
+        </div>
+        <div id="retell-status-section">
+          <span id="retell-status-label">Status:</span>
+          <span id="retell-status" class="offline">Loading...</span>
+        </div>
+        <button id="retell-call-button" class="start" disabled>
+          <span id="retell-call-icon">📞</span>
+          <span id="retell-call-text">Call</span>
+        </button>
+        <div id="retell-transcript-container">
+          <div id="retell-transcript"></div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(fab);
+    document.body.appendChild(panel);
+
+    return {
+      fab,
+      panel,
+      statusEl: document.getElementById('retell-status'),
+      callButton: document.getElementById('retell-call-button'),
+      callText: document.getElementById('retell-call-text'),
+      callIcon: document.getElementById('retell-call-icon'),
+      transcriptContainer: document.getElementById('retell-transcript-container')
+    };
+  }
+
+  // Load Retell SDK
+  function loadRetellSDK() {
+    return new Promise((resolve, reject) => {
+      console.log('🎧 Attempting to load Retell SDK from unpkg...');
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/retell-client-js-sdk@latest/dist/retell-client-js-sdk.min.js';
+      
+      script.onload = () => {
+        console.log('🎧 Retell SDK loaded from unpkg');
+        resolve();
+      };
+      
+      script.onerror = () => {
+        console.log('🎧 unpkg failed, trying jsdelivr...');
+        // Fallback to jsdelivr
+        const script2 = document.createElement('script');
+        script2.src = 'https://cdn.jsdelivr.net/npm/retell-client-js-sdk@latest/dist/retell-client-js-sdk.min.js';
+        
+        script2.onload = () => {
+          console.log('🎧 Retell SDK loaded from jsdelivr');
+          resolve();
+        };
+        
+        script2.onerror = () => {
+          console.log('🎧 jsdelivr failed, trying skypack...');
+          // Fallback to skypack with dynamic import
+          import('https://cdn.skypack.dev/retell-client-js-sdk')
+            .then(({ RetellWebClient }) => {
+              window.RetellWebClient = RetellWebClient;
+              console.log('🎧 Retell SDK loaded from skypack');
+              resolve();
+            })
+            .catch(err => {
+              console.log('🎧 skypack failed, trying esm.sh...');
+              // Final fallback to esm.sh
+              import('https://esm.sh/retell-client-js-sdk')
+                .then(({ RetellWebClient }) => {
+                  window.RetellWebClient = RetellWebClient;
+                  console.log('🎧 Retell SDK loaded from esm.sh');
+                  resolve();
+                })
+                .catch(finalErr => {
+                  console.error('🎧 All SDK loading methods failed');
+                  console.error('unpkg error:', script.error);
+                  console.error('jsdelivr error:', script2.error);
+                  console.error('skypack error:', err);
+                  console.error('esm.sh error:', finalErr);
+                  reject(new Error('Failed to load Retell SDK from all sources'));
+                });
+            });
+        };
+        
+        document.head.appendChild(script2);
+      };
+      
+      document.head.appendChild(script);
+    });
+  }
+
+  // Initialize widget functionality
+  function initializeWidget(elements) {
+    let RetellWebClient;
+    let client;
+    let isCallActive = false;
+    let demoMode = false;
+
+    try {
+      // Try to find RetellWebClient
+      if (window.RetellSDK && window.RetellSDK.RetellWebClient) {
+        RetellWebClient = window.RetellSDK.RetellWebClient;
+        console.log('🎧 Found RetellWebClient in window.RetellSDK');
+      } else if (window.RetellWebClient) {
+        RetellWebClient = window.RetellWebClient;
+        console.log('🎧 Found RetellWebClient in window');
+      } else if (window.Retell && window.Retell.RetellWebClient) {
+        RetellWebClient = window.Retell.RetellWebClient;
+        console.log('🎧 Found RetellWebClient in window.Retell');
+      } else {
+        console.warn('🎧 RetellWebClient not found - enabling demo mode');
+        demoMode = true;
+      }
+
+      if (!demoMode) {
+        client = new RetellWebClient();
+      }
+
+      // Update status
+      elements.statusEl.textContent = demoMode ? 'Demo Mode' : 'Offline';
+      elements.statusEl.className = demoMode ? 'connecting' : 'offline';
+      elements.callButton.disabled = false;
+
+      console.log('🎧 Widget initialized successfully' + (demoMode ? ' (Demo Mode)' : ''));
+
+    } catch (error) {
+      console.warn('🎧 SDK initialization failed, enabling demo mode:', error);
+      demoMode = true;
+      elements.statusEl.textContent = 'Demo Mode';
+      elements.statusEl.className = 'connecting';
+      elements.callButton.disabled = false;
+    }
+
+    // Event handlers
+    elements.fab.onclick = () => {
+      const isVisible = elements.panel.style.display !== 'none';
+      elements.panel.style.display = isVisible ? 'none' : 'block';
+    };
+
+    // Keyboard support
+    elements.fab.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        elements.fab.click();
+      }
+    };
+
+    document.getElementById('retell-close').onclick = () => {
+      elements.panel.style.display = 'none';
+    };
+
+    elements.callButton.onclick = async () => {
+      if (demoMode) {
+        // Demo mode simulation
+        if (!isCallActive) {
+          console.log('🎧 Demo: Starting simulated call...');
+          elements.statusEl.textContent = 'Connecting...';
+          elements.statusEl.className = 'connecting';
+          elements.callButton.disabled = true;
+
+          // Simulate connection delay
+          setTimeout(() => {
+            elements.statusEl.textContent = 'Connected (Demo)';
+            elements.statusEl.className = 'online';
+            isCallActive = true;
+            elements.callButton.className = 'end';
+            elements.callButton.disabled = false;
+            elements.callText.textContent = 'End Call';
+            elements.transcriptContainer.classList.add('show');
+            
+            // Add demo transcript
+            const transcriptDiv = document.getElementById('retell-transcript');
+            transcriptDiv.textContent = 'Demo Mode: This is a simulation.\n\nIn production, this would show real-time conversation transcripts between you and the AI agent.\n\nThe actual voice calls work with your Retell AI agent when the SDK loads properly.';
+            
+            console.log('🎧 Demo: Call connected');
+          }, 1500);
+        } else {
+          console.log('🎧 Demo: Ending simulated call...');
+          elements.statusEl.textContent = 'Demo Mode';
+          elements.statusEl.className = 'connecting';
+          isCallActive = false;
+          elements.callButton.className = 'start';
+          elements.callButton.disabled = false;
+          elements.callText.textContent = 'Call';
+        }
+        return;
+      }
+
+      // Real Retell functionality
+      if (!isCallActive) {
+        try {
+          console.log('🎧 Starting real call...');
+          elements.statusEl.textContent = 'Connecting...';
+          elements.statusEl.className = 'connecting';
+          elements.callButton.disabled = true;
+
+          const response = await fetch(config.webhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ agent_id: config.agentId })
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const responseText = await response.text();
+          const accessToken = responseText.trim();
+
+          await client.startCall({
+            accessToken: accessToken,
+            sampleRate: 24000,
+            enableUpdate: true
+          });
+
+        } catch (error) {
+          console.error('🎧 Call failed:', error);
+          elements.statusEl.textContent = 'Connection failed';
+          elements.statusEl.className = 'offline';
+          elements.callButton.disabled = false;
+        }
+      } else {
+        console.log('🎧 Ending real call...');
+        client.stopCall();
+      }
+    };
+
+    // Retell event listeners (only if not in demo mode)
+    if (!demoMode && client) {
+      client.on('call_started', () => {
+        console.log('🎧 Call started');
+        elements.statusEl.textContent = 'Connected';
+        elements.statusEl.className = 'online';
+        isCallActive = true;
+        elements.callButton.className = 'end';
+        elements.callButton.disabled = false;
+        elements.callText.textContent = 'End Call';
+        elements.transcriptContainer.classList.add('show');
+      });
+
+      client.on('call_ended', () => {
+        console.log('🎧 Call ended');
+        elements.statusEl.textContent = 'Offline';
+        elements.statusEl.className = 'offline';
+        isCallActive = false;
+        elements.callButton.className = 'start';
+        elements.callButton.disabled = false;
+        elements.callText.textContent = 'Call';
+      });
+
+      client.on('agent_start_talking', () => {
+        elements.statusEl.textContent = 'Agent speaking...';
+        elements.statusEl.className = 'online';
+      });
+
+      client.on('agent_stop_talking', () => {
+        elements.statusEl.textContent = 'Listening...';
+        elements.statusEl.className = 'online';
+      });
+
+      client.on('update', (update) => {
+        if (update.transcript && update.transcript.length > 0) {
+          const transcriptDiv = document.getElementById('retell-transcript');
+          const transcriptText = update.transcript
+            .map(t => `${t.role === 'agent' ? 'Agent' : 'You'}: ${t.content}`)
+            .join('\n\n');
+          transcriptDiv.textContent = transcriptText;
+          transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+        }
+      });
+
+      client.on('error', (error) => {
+        console.error('🎧 Retell error:', error);
+        elements.statusEl.textContent = 'Error occurred';
+        elements.statusEl.className = 'offline';
+        isCallActive = false;
+        elements.callButton.className = 'start';
+        elements.callButton.disabled = false;
+        elements.callText.textContent = 'Call';
+      });
+    }
+  }
+
+  // Main initialization
+  async function init() {
+    if (!config.webhook) {
+      console.error('🎧 Missing data-webhook attribute');
+      return;
+    }
+
+    try {
+      // Inject styles
+      injectStyles();
+
+      // Create UI
+      const elements = createWidget();
+
+      // Try to load SDK, but continue even if it fails
+      try {
+        await loadRetellSDK();
+        console.log('🎧 SDK loaded successfully, initializing with full functionality');
+      } catch (error) {
+        console.warn('🎧 SDK loading failed, initializing in demo mode:', error.message);
+      }
+
+      // Initialize widget (will auto-detect if SDK is available)
+      initializeWidget(elements);
+
+      console.log('🎧 Retell Universal Widget ready!');
+    } catch (error) {
+      console.error('🎧 Widget initialization failed:', error);
+    }
+  }
+
+  // Start when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
