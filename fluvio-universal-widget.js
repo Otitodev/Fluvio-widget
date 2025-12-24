@@ -1,9 +1,9 @@
 /**
- * Retell Universal Voice Widget
+ * Fluvio Universal Voice Widget
  * Deploy to any website with a single script tag
  * 
  * Usage:
- * <script src="https://your-domain.com/retell-universal-widget.js" 
+ * <script src="https://your-domain.com/fluvio-universal-widget.js" 
  *         data-webhook="https://hook.us2.make.com/your-webhook"
  *         data-agent-id="agent_your_agent_id"></script>
  */
@@ -12,29 +12,37 @@
   'use strict';
 
   // Configuration from script tag attributes
-  const currentScript = document.currentScript || document.querySelector('script[src*="retell-universal-widget"]');
+  const currentScript = document.currentScript || document.querySelector('script[src*="fluvio-universal-widget"]');
   const config = {
     webhook: currentScript?.getAttribute('data-webhook') || '',
     agentId: currentScript?.getAttribute('data-agent-id') || '',
     color: currentScript?.getAttribute('data-color') || '#347D9B',
     position: currentScript?.getAttribute('data-position') || 'bottom-right',
     title: currentScript?.getAttribute('data-title') || 'Voice Assistant',
-    subtitle: currentScript?.getAttribute('data-subtitle') || 'Live Voice Agent'
+    subtitle: currentScript?.getAttribute('data-subtitle') || 'Live Voice Agent',
+    // Dynamic variables support
+    companyName: currentScript?.getAttribute('data-company-name') || '',
+    companyNumber: currentScript?.getAttribute('data-company-number') || '',
+    companyHours: currentScript?.getAttribute('data-company-hours') || '',
+    agentName: currentScript?.getAttribute('data-agent-name') || '',
+    agentTitle: currentScript?.getAttribute('data-agent-title') || '',
+    companyAddress: currentScript?.getAttribute('data-company-address') || '',
+    greeting: currentScript?.getAttribute('data-greeting') || ''
   };
 
   // Prevent multiple instances
-  if (window.RetellWidgetLoaded) {
-    console.warn('Retell Widget already loaded');
+  if (window.FluvioWidgetLoaded) {
+    console.warn('Fluvio Widget already loaded');
     return;
   }
-  window.RetellWidgetLoaded = true;
+  window.FluvioWidgetLoaded = true;
 
-  console.log('🎧 Retell Universal Widget Loading...');
+  console.log('🎧 Fluvio Universal Widget Loading...');
 
   // Inject CSS styles
   function injectStyles() {
     const css = `
-      #retell-fab {
+      #fluvio-fab {
         position: fixed;
         bottom: 20px;
         right: 20px;
@@ -51,22 +59,22 @@
         font-size: 24px;
         box-shadow: 0 8px 32px rgba(52, 125, 155, 0.3);
         transition: all 0.3s ease;
-        animation: retell-float 3s ease-in-out infinite;
+        animation: fluvio-float 3s ease-in-out infinite;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         border: none;
       }
 
-      #retell-fab:hover {
+      #fluvio-fab:hover {
         transform: translateY(-2px) scale(1.05);
         box-shadow: 0 12px 40px rgba(52, 125, 155, 0.4);
       }
 
-      @keyframes retell-float {
+      @keyframes fluvio-float {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-8px); }
       }
 
-      #retell-panel {
+      #fluvio-panel {
         position: fixed;
         bottom: 100px;
         right: 20px;
@@ -78,10 +86,10 @@
         display: none;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         overflow: hidden;
-        animation: retell-slideUp 0.3s ease-out;
+        animation: fluvio-slideUp 0.3s ease-out;
       }
 
-      @keyframes retell-slideUp {
+      @keyframes fluvio-slideUp {
         from {
           opacity: 0;
           transform: translateY(20px);
@@ -92,7 +100,7 @@
         }
       }
 
-      #retell-header {
+      #fluvio-header {
         background: linear-gradient(135deg, ${config.color} 0%, ${config.color}dd 100%);
         color: white;
         padding: 20px 24px;
@@ -101,13 +109,13 @@
         justify-content: space-between;
       }
 
-      #retell-header-content {
+      #fluvio-header-content {
         display: flex;
         align-items: center;
         gap: 12px;
       }
 
-      #retell-header-icon {
+      #fluvio-header-icon {
         width: 32px;
         height: 32px;
         background: rgba(255,255,255,0.2);
@@ -118,21 +126,21 @@
         font-size: 16px;
       }
 
-      #retell-header-text h4 {
+      #fluvio-header-text h4 {
         margin: 0;
         font-size: 18px;
         font-weight: 600;
         line-height: 1.2;
       }
 
-      #retell-header-text p {
+      #fluvio-header-text p {
         margin: 2px 0 0 0;
         font-size: 14px;
         opacity: 0.9;
         font-weight: 400;
       }
 
-      #retell-close {
+      #fluvio-close {
         background: none;
         border: none;
         color: white;
@@ -148,23 +156,23 @@
         justify-content: center;
       }
 
-      #retell-close:hover {
+      #fluvio-close:hover {
         background: rgba(255,255,255,0.1);
       }
 
-      #retell-content {
+      #fluvio-content {
         padding: 32px 24px 24px;
         text-align: center;
       }
 
-      #retell-instruction {
+      #fluvio-instruction {
         color: #6B7280;
         font-size: 16px;
         margin-bottom: 32px;
         line-height: 1.5;
       }
 
-      #retell-status-section {
+      #fluvio-status-section {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -174,31 +182,31 @@
         border-radius: 12px;
       }
 
-      #retell-status-label {
+      #fluvio-status-label {
         font-size: 14px;
         color: #6B7280;
         font-weight: 500;
       }
 
-      #retell-status {
+      #fluvio-status {
         font-size: 14px;
         font-weight: 600;
         color: #374151;
       }
 
-      #retell-status.offline {
+      #fluvio-status.offline {
         color: #6B7280;
       }
 
-      #retell-status.connecting {
+      #fluvio-status.connecting {
         color: #F59E0B;
       }
 
-      #retell-status.online {
+      #fluvio-status.online {
         color: #10B981;
       }
 
-      #retell-call-button {
+      #fluvio-call-button {
         width: 100%;
         padding: 16px 24px;
         border: none;
@@ -214,46 +222,46 @@
         font-family: inherit;
       }
 
-      #retell-call-button.start {
+      #fluvio-call-button.start {
         background: ${config.color};
         color: white;
       }
 
-      #retell-call-button.start:hover:not(:disabled) {
+      #fluvio-call-button.start:hover:not(:disabled) {
         background: ${config.color}dd;
         transform: translateY(-1px);
       }
 
-      #retell-call-button.end {
+      #fluvio-call-button.end {
         background: #EF4444;
         color: white;
       }
 
-      #retell-call-button.end:hover:not(:disabled) {
+      #fluvio-call-button.end:hover:not(:disabled) {
         background: #DC2626;
         transform: translateY(-1px);
       }
 
-      #retell-call-button:disabled {
+      #fluvio-call-button:disabled {
         opacity: 0.6;
         cursor: not-allowed;
         transform: none !important;
       }
 
-      #retell-call-icon {
+      #fluvio-call-icon {
         font-size: 18px;
       }
 
-      #retell-transcript-container {
+      #fluvio-transcript-container {
         margin-top: 24px;
         display: none;
       }
 
-      #retell-transcript-container.show {
+      #fluvio-transcript-container.show {
         display: block;
       }
 
-      #retell-transcript {
+      #fluvio-transcript {
         background: #F9FAFB;
         border-radius: 12px;
         padding: 16px;
@@ -268,7 +276,7 @@
 
       /* Mobile responsiveness */
       @media (max-width: 768px) {
-        #retell-fab {
+        #fluvio-fab {
           width: 56px;
           height: 56px;
           bottom: 16px;
@@ -277,7 +285,7 @@
           animation: none;
         }
 
-        #retell-panel {
+        #fluvio-panel {
           width: calc(100vw - 32px);
           right: 16px;
           left: 16px;
@@ -286,22 +294,22 @@
           overflow-y: auto;
         }
 
-        #retell-header {
+        #fluvio-header {
           padding: 16px 20px;
         }
 
-        #retell-content {
+        #fluvio-content {
           padding: 24px 20px 20px;
         }
 
-        #retell-instruction {
+        #fluvio-instruction {
           font-size: 15px;
           margin-bottom: 24px;
         }
       }
 
       @media (max-width: 360px) {
-        #retell-fab {
+        #fluvio-fab {
           width: 52px;
           height: 52px;
           bottom: 12px;
@@ -309,7 +317,7 @@
           font-size: 20px;
         }
 
-        #retell-panel {
+        #fluvio-panel {
           width: calc(100vw - 24px);
           right: 12px;
           left: 12px;
@@ -319,34 +327,34 @@
       }
 
       /* Position variations */
-      .retell-position-bottom-left #retell-fab {
+      .fluvio-position-bottom-left #fluvio-fab {
         left: 20px;
         right: auto;
       }
 
-      .retell-position-bottom-left #retell-panel {
+      .fluvio-position-bottom-left #fluvio-panel {
         left: 20px;
         right: auto;
       }
 
-      .retell-position-top-right #retell-fab {
+      .fluvio-position-top-right #fluvio-fab {
         top: 20px;
         bottom: auto;
       }
 
-      .retell-position-top-right #retell-panel {
+      .fluvio-position-top-right #fluvio-panel {
         top: 100px;
         bottom: auto;
       }
 
-      .retell-position-top-left #retell-fab {
+      .fluvio-position-top-left #fluvio-fab {
         top: 20px;
         left: 20px;
         bottom: auto;
         right: auto;
       }
 
-      .retell-position-top-left #retell-panel {
+      .fluvio-position-top-left #fluvio-panel {
         top: 100px;
         left: 20px;
         bottom: auto;
@@ -585,7 +593,19 @@
           const response = await fetch(config.webhook, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ agent_id: config.agentId })
+            body: JSON.stringify({ 
+              agent_id: config.agentId,
+              // Include dynamic variables from script tag if provided
+              dynamic_variables: {
+                ...(config.companyName && { company_name: config.companyName }),
+                ...(config.companyNumber && { company_number: config.companyNumber }),
+                ...(config.companyHours && { company_hours: config.companyHours }),
+                ...(config.agentName && { AI_agent: config.agentName }),
+                ...(config.agentTitle && { AI_agent_title: config.agentTitle }),
+                ...(config.companyAddress && { company_address: config.companyAddress }),
+                ...(config.greeting && { greeting: config.greeting })
+              }
+            })
           });
 
           if (!response.ok) {
@@ -593,13 +613,37 @@
           }
 
           const responseText = await response.text();
-          const accessToken = responseText.trim();
+          let webhookData;
+          
+          // Try to parse as JSON first (for dynamic variables)
+          try {
+            webhookData = JSON.parse(responseText);
+          } catch (e) {
+            // If not JSON, treat as raw token string (backward compatibility)
+            webhookData = { access_token: responseText.trim() };
+          }
 
-          await client.startCall({
+          const accessToken = webhookData.access_token || responseText.trim();
+          
+          if (!accessToken) {
+            throw new Error('No access token received');
+          }
+
+          // Prepare call options
+          const callOptions = {
             accessToken: accessToken,
             sampleRate: 24000,
             enableUpdate: true
-          });
+          };
+
+          // Add dynamic variables if they exist in the webhook response
+          if (webhookData.call_inbound && webhookData.call_inbound.dynamic_variables) {
+            callOptions.retell_llm_dynamic_variables = webhookData.call_inbound.dynamic_variables;
+            console.log('🎧 Dynamic variables included:', webhookData.call_inbound.dynamic_variables);
+          }
+
+          console.log('🎧 Starting call with options:', callOptions);
+          await client.startCall(callOptions);
 
         } catch (error) {
           console.error('🎧 Call failed:', error);
