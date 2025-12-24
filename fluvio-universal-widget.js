@@ -370,11 +370,11 @@
   // Create widget UI
   function createWidget() {
     // Add position class to body
-    document.body.classList.add(`retell-position-${config.position}`);
+    document.body.classList.add(`fluvio-position-${config.position}`);
 
     // Create floating button
     const fab = document.createElement('div');
-    fab.id = 'retell-fab';
+    fab.id = 'fluvio-fab';
     fab.innerHTML = '💬';
     fab.setAttribute('aria-label', 'Open voice assistant');
     fab.setAttribute('role', 'button');
@@ -382,32 +382,32 @@
 
     // Create panel
     const panel = document.createElement('div');
-    panel.id = 'retell-panel';
+    panel.id = 'fluvio-panel';
     panel.innerHTML = `
-      <div id="retell-header">
-        <div id="retell-header-content">
-          <div id="retell-header-icon">🎧</div>
-          <div id="retell-header-text">
+      <div id="fluvio-header">
+        <div id="fluvio-header-content">
+          <div id="fluvio-header-icon">🎧</div>
+          <div id="fluvio-header-text">
             <h4>${config.title}</h4>
             <p>${config.subtitle}</p>
           </div>
         </div>
-        <button id="retell-close" aria-label="Close">×</button>
+        <button id="fluvio-close" aria-label="Close">×</button>
       </div>
-      <div id="retell-content">
-        <div id="retell-instruction">
+      <div id="fluvio-content">
+        <div id="fluvio-instruction">
           Tap the call button to start talking.
         </div>
-        <div id="retell-status-section">
-          <span id="retell-status-label">Status:</span>
-          <span id="retell-status" class="offline">Loading...</span>
+        <div id="fluvio-status-section">
+          <span id="fluvio-status-label">Status:</span>
+          <span id="fluvio-status" class="offline">Loading...</span>
         </div>
-        <button id="retell-call-button" class="start" disabled>
-          <span id="retell-call-icon">📞</span>
-          <span id="retell-call-text">Call</span>
+        <button id="fluvio-call-button" class="start" disabled>
+          <span id="fluvio-call-icon">📞</span>
+          <span id="fluvio-call-text">Call</span>
         </button>
-        <div id="retell-transcript-container">
-          <div id="retell-transcript"></div>
+        <div id="fluvio-transcript-container">
+          <div id="fluvio-transcript"></div>
         </div>
       </div>
     `;
@@ -418,11 +418,11 @@
     return {
       fab,
       panel,
-      statusEl: document.getElementById('retell-status'),
-      callButton: document.getElementById('retell-call-button'),
-      callText: document.getElementById('retell-call-text'),
-      callIcon: document.getElementById('retell-call-icon'),
-      transcriptContainer: document.getElementById('retell-transcript-container')
+      statusEl: document.getElementById('fluvio-status'),
+      callButton: document.getElementById('fluvio-call-button'),
+      callText: document.getElementById('fluvio-call-text'),
+      callIcon: document.getElementById('fluvio-call-icon'),
+      transcriptContainer: document.getElementById('fluvio-transcript-container')
     };
   }
 
@@ -541,7 +541,7 @@
       }
     };
 
-    document.getElementById('retell-close').onclick = () => {
+    document.getElementById('fluvio-close').onclick = () => {
       elements.panel.style.display = 'none';
     };
 
@@ -565,7 +565,7 @@
             elements.transcriptContainer.classList.add('show');
             
             // Add demo transcript
-            const transcriptDiv = document.getElementById('retell-transcript');
+            const transcriptDiv = document.getElementById('fluvio-transcript');
             transcriptDiv.textContent = 'Demo Mode: This is a simulation.\n\nIn production, this would show real-time conversation transcripts between you and the AI agent.\n\nThe actual voice calls work with your Retell AI agent when the SDK loads properly.';
             
             console.log('🎧 Demo: Call connected');
@@ -692,7 +692,7 @@
 
       client.on('update', (update) => {
         if (update.transcript && update.transcript.length > 0) {
-          const transcriptDiv = document.getElementById('retell-transcript');
+          const transcriptDiv = document.getElementById('fluvio-transcript');
           const transcriptText = update.transcript
             .map(t => `${t.role === 'agent' ? 'Agent' : 'You'}: ${t.content}`)
             .join('\n\n');
