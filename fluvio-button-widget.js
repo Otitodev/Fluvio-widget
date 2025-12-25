@@ -248,11 +248,21 @@
 
   // Handle button clicks
   function handleButtonClick(event) {
-    const button = event.target;
+    const button = event.currentTarget; // Use currentTarget instead of target
+    
+    console.log('🎧 Button click detected:', button);
+    
+    // Ensure button is not disabled
+    if (button.disabled) {
+      console.log('🎧 Button is disabled, ignoring click');
+      return;
+    }
     
     if (isCallActive && button === currentButton) {
+      console.log('🎧 Ending active call');
       endCall(button);
     } else if (!isCallActive) {
+      console.log('🎧 Starting new call');
       startCall(button);
     }
   }
@@ -272,12 +282,47 @@
 
       console.log('🎧 Retell SDK ready');
 
+      // Initialize buttons with retry mechanism
+      initializeButtons();
+
+    } catch (error) {
+      console.warn('🎧 Failed to load Retell SDK, enabling demo mode:', error);
+      enableDemoMode();
+    }
+  }
+
+  // Initialize buttons with retry mechanism
+  function initializeButtons() {
+    const maxRetries = 5;
+    let retryCount = 0;
+
+    function tryInitialize() {
       // Find all Fluvio call buttons and attach event listeners
       const buttons = document.querySelectorAll('.fluvio-call-btn');
       
+      if (buttons.length === 0 && retryCount < maxRetries) {
+        retryCount++;
+        console.log(`🎧 No buttons found, retrying... (${retryCount}/${maxRetries})`);
+        setTimeout(tryInitialize, 100);
+        return;
+      }
+
+      if (buttons.length === 0) {
+        console.log('🎧 No Fluvio buttons found after retries');
+        return;
+      }
+
       buttons.forEach(button => {
-        // Add click handler
+        // Skip if already initialized
+        if (button.hasAttribute('data-fluvio-initialized')) {
+          return;
+        }
+        
+        // Add click handler - use simple approach
         button.addEventListener('click', handleButtonClick);
+        
+        // Mark as initialized to prevent duplicate initialization
+        button.setAttribute('data-fluvio-initialized', 'true');
         
         // Add basic styling if not already styled
         if (!button.style.cursor) {
@@ -298,6 +343,7 @@
               
               newButtons.forEach(button => {
                 if (!button.hasAttribute('data-fluvio-initialized')) {
+                  // Add click handler
                   button.addEventListener('click', handleButtonClick);
                   button.setAttribute('data-fluvio-initialized', 'true');
                   console.log('🎧 Dynamic button initialized:', button);
@@ -311,47 +357,91 @@
       observer.observe(document.body, { childList: true, subtree: true });
 
       console.log('🎧 Fluvio Button Widget ready!');
-
-    } catch (error) {
-      console.warn('🎧 Failed to load Retell SDK, enabling demo mode:', error);
-      enableDemoMode();
     }
+
+    tryInitialize();
   }
 
   // Demo mode for when SDK fails to load
   function enableDemoMode() {
     console.log('🎧 Demo mode enabled');
     
-    const buttons = document.querySelectorAll('.fluvio-call-btn');
-    
-    buttons.forEach(button => {
-      button.addEventListener('click', (e) => {
-        const originalText = button.textContent;
-        button.textContent = 'Demo Mode';
-        button.disabled = true;
-        
-        setTimeout(() => {
-          alert('Demo Mode: In production, this would start a real voice call with your Fluvio agent.\n\nTo enable real calls, ensure the Retell SDK loads properly.');
-          button.textContent = originalText;
-          button.disabled = false;
-        }, 1000);
-      });
+    const maxRetries = 5;
+    let retryCount = 0;
+
+    function tryInitializeDemo() {
+      const buttons = document.querySelectorAll('.fluvio-call-btn');
       
-      if (!button.style.cursor) {
-        button.style.cursor = 'pointer';
+      if (buttons.length === 0 && retryCount < maxRetries) {
+        retryCount++;
+        console.log(`🎧 Demo mode: No buttons found, retrying... (${retryCount}/${maxRetries})`);
+        setTimeout(tryInitializeDemo, 100);
+        return;
+      }
+
+      if (buttons.length === 0) {
+        console.log('🎧 Demo mode: No Fluvio buttons found after retries');
+        return;
+      }
+
+      buttons.forEach(button => {
+        // Skip if already initialized
+        if (button.hasAttribute('data-fluvio-demo-initialized')) {
+          return;
+        }
+
+        // Remove any existing listeners to prevent duplicates
+        button.removeEventListener('click', demoClickHandler);
+        
+        button.addEventListener('click', demoClickHandler);
+        button.setAttribute('data-fluvio-demo-initialized', 'true');
+        
+        if (!button.style.cursor) {
+          button.style.cursor = 'pointer';
+        }
+        
+        console.log('🎧 Button initialized in demo mode:', button);
+      });
+
+      console.log('🎧 Fluvio Button Widget ready (Demo Mode)!');
+    }
+
+    function demoClickHandler(e) {
+      const button = e.currentTarget; // Use currentTarget instead of target
+      
+      console.log('🎧 Demo button click detected:', button);
+      
+      // Ensure button is not disabled
+      if (button.disabled) {
+        console.log('🎧 Demo button is disabled, ignoring click');
+        return;
       }
       
-      console.log('🎧 Button initialized in demo mode:', button);
-    });
+      const originalText = button.textContent;
+      button.textContent = 'Demo Mode';
+      button.disabled = true;
+      
+      setTimeout(() => {
+        alert('Demo Mode: In production, this would start a real voice call with your Fluvio agent.\n\nTo enable real calls, ensure the Retell SDK loads properly.');
+        button.textContent = originalText;
+        button.disabled = false;
+      }, 1000);
+    }
 
-    console.log('🎧 Fluvio Button Widget ready (Demo Mode)!');
+    tryInitializeDemo();
   }
 
   // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  function initWhenReady() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      // DOM is already ready, but let's wait a tick to ensure all scripts are loaded
+      setTimeout(init, 0);
+    }
   }
+
+  // Call initialization
+  initWhenReady();
 
 })();

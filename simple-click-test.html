@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Click Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .fluvio-call-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Simple Click Test</h1>
+    
+    <p>Test if the first click works:</p>
+    
+    <button class="test-button" onclick="log('Regular button clicked on first try!')">
+        Regular Button (Should work)
+    </button>
+    
+    <button class="fluvio-call-btn" 
+            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4">
+        Fluvio Button (Test first click)
+    </button>
+    
+    <div id="log" class="log">
+        Click log will appear here...<br>
+    </div>
+
+    <script>
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            console.log(message);
+        }
+
+        // Monitor all clicks
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('fluvio-call-btn')) {
+                log('🎧 Fluvio button clicked detected!');
+            }
+        });
+
+        log('Page loaded, ready for testing...');
+    </script>
+
+    <!-- Load the widget -->
+    <script src="fluvio-button-widget.js"></script>
+</body>
+</html>

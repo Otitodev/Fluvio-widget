@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook Debug Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+        }
+        .test-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Webhook Debug Test</h1>
+        <p>This will help us understand exactly what the Make.com webhook is doing.</p>
+
+        <div class="test-section">
+            <h3>Test 1: Current Webhook Response</h3>
+            <p>Test the webhook as it currently works:</p>
+            <button onclick="testCurrentWebhook()">Test Current Webhook</button>
+            <div id="current-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: Send Dynamic Variables to Webhook</h3>
+            <p>Test sending dynamic variables to see if webhook processes them:</p>
+            <button onclick="testWithVariables()">Test With Variables</button>
+            <div id="variables-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Analysis</h3>
+            <div id="analysis" class="result">
+Click the test buttons above to analyze the webhook behavior.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testCurrentWebhook() {
+            const resultDiv = document.getElementById('current-result');
+            resultDiv.textContent = 'Testing current webhook...';
+            
+            try {
+                const response = await fetch('https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        agent_id: 'agent_a4cb9032ec31e009d34b9be1a4'
+                    })
+                });
+
+                const responseText = await response.text();
+                
+                resultDiv.innerHTML = `<span class="success">✅ Response received:</span>\n\nStatus: ${response.status}\nHeaders: ${JSON.stringify([...response.headers.entries()], null, 2)}\n\nBody:\n${responseText}`;
+                
+                analyzeResponse('current', responseText);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Error:</span>\n${error.message}`;
+            }
+        }
+
+        async function testWithVariables() {
+            const resultDiv = document.getElementById('variables-result');
+            resultDiv.textContent = 'Testing webhook with dynamic variables...';
+            
+            try {
+                const response = await fetch('https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        agent_id: 'agent_a4cb9032ec31e009d34b9be1a4',
+                        dynamic_variables: {
+                            test_variable: 'test_value',
+                            company_name: 'Test Company',
+                            AI_agent: 'Test Agent'
+                        }
+                    })
+                });
+
+                const responseText = await response.text();
+                
+                resultDiv.innerHTML = `<span class="success">✅ Response received:</span>\n\nStatus: ${response.status}\nHeaders: ${JSON.stringify([...response.headers.entries()], null, 2)}\n\nBody:\n${responseText}`;
+                
+                analyzeResponse('variables', responseText);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Error:</span>\n${error.message}`;
+            }
+        }
+
+        function analyzeResponse(testType, responseText) {
+            const analysisDiv = document.getElementById('analysis');
+            
+            try {
+                const data = JSON.parse(responseText);
+                
+                let analysis = `📊 Analysis for ${testType} test:\n\n`;
+                
+                if (data.access_token) {
+                    analysis += `✅ Access token present: ${data.access_token.substring(0, 50)}...\n`;
+                } else {
+                    analysis += `❌ No access token found\n`;
+                }
+                
+                if (data.call_inbound && data.call_inbound.dynamic_variables) {
+                    analysis += `✅ Dynamic variables in response:\n`;
+                    analysis += JSON.stringify(data.call_inbound.dynamic_variables, null, 2) + '\n';
+                    analysis += `\n🔍 This suggests the webhook is APPENDING variables after getting the token from Retell API.\n`;
+                    analysis += `❌ Variables are NOT being sent to Retell's Create Web Call API.\n`;
+                } else {
+                    analysis += `❌ No dynamic variables in response\n`;
+                }
+                
+                analysisDiv.textContent = analysis;
+                
+            } catch (e) {
+                analysisDiv.textContent = `Raw response (not JSON):\n${responseText}`;
+            }
+        }
+
+        // Auto-run first test
+        setTimeout(() => {
+            testCurrentWebhook();
+        }, 1000);
+    </script>
+</body>
+</html>

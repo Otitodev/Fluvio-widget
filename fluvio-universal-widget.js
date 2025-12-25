@@ -20,6 +20,7 @@
     position: currentScript?.getAttribute('data-position') || 'bottom-right',
     title: currentScript?.getAttribute('data-title') || 'Voice Assistant',
     subtitle: currentScript?.getAttribute('data-subtitle') || 'Live Voice Agent',
+    showTranscript: currentScript?.getAttribute('data-show-transcript') === 'true', // Default false
     // Dynamic variables support
     companyName: currentScript?.getAttribute('data-company-name') || '',
     companyNumber: currentScript?.getAttribute('data-company-number') || '',
@@ -261,6 +262,52 @@
         display: block;
       }
 
+      #fluvio-transcript-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      #fluvio-transcript-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      #fluvio-transcript-toggle {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        background: #E5E7EB;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        border: none;
+        outline: none;
+      }
+
+      #fluvio-transcript-toggle.active {
+        background: ${config.color};
+      }
+
+      #fluvio-transcript-toggle::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      #fluvio-transcript-toggle.active::after {
+        transform: translateX(20px);
+      }
+
       #fluvio-transcript {
         background: #F9FAFB;
         border-radius: 12px;
@@ -407,7 +454,12 @@
           <span id="fluvio-call-text">Call</span>
         </button>
         <div id="fluvio-transcript-container">
-          <div id="fluvio-transcript"></div>
+          <div id="fluvio-transcript-header">
+            <span id="fluvio-transcript-label">Live Transcript</span>
+            <button id="fluvio-transcript-toggle" class="${config.showTranscript ? 'active' : ''}" 
+                    aria-label="Toggle transcript" title="Toggle live transcript"></button>
+          </div>
+          <div id="fluvio-transcript" style="display: ${config.showTranscript ? 'block' : 'none'}"></div>
         </div>
       </div>
     `;
@@ -491,6 +543,7 @@
     let client;
     let isCallActive = false;
     let demoMode = false;
+    let transcriptEnabled = config.showTranscript; // Track transcript state
 
     try {
       // Try to find RetellWebClient
@@ -528,24 +581,52 @@
     }
 
     // Event handlers
-    elements.fab.onclick = () => {
+    elements.fab.addEventListener('click', (e) => {
+      console.log('🎧 FAB clicked');
       const isVisible = elements.panel.style.display !== 'none';
       elements.panel.style.display = isVisible ? 'none' : 'block';
-    };
+    });
 
     // Keyboard support
-    elements.fab.onkeydown = (e) => {
+    elements.fab.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        console.log('🎧 FAB keyboard activated');
         elements.fab.click();
       }
-    };
+    });
 
-    document.getElementById('fluvio-close').onclick = () => {
+    document.getElementById('fluvio-close').addEventListener('click', (e) => {
+      console.log('🎧 Close button clicked');
       elements.panel.style.display = 'none';
-    };
+    });
 
-    elements.callButton.onclick = async () => {
+    // Transcript toggle functionality
+    const transcriptToggle = document.getElementById('fluvio-transcript-toggle');
+    const transcriptDiv = document.getElementById('fluvio-transcript');
+    
+    transcriptToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      transcriptEnabled = !transcriptEnabled;
+      
+      // Update toggle appearance
+      transcriptToggle.classList.toggle('active', transcriptEnabled);
+      
+      // Show/hide transcript
+      transcriptDiv.style.display = transcriptEnabled ? 'block' : 'none';
+      
+      console.log('🎧 Transcript toggled:', transcriptEnabled ? 'ON' : 'OFF');
+    });
+
+    elements.callButton.addEventListener('click', async (e) => {
+      console.log('🎧 Call button clicked');
+      
+      // Ensure button is not disabled
+      if (elements.callButton.disabled) {
+        console.log('🎧 Call button is disabled, ignoring click');
+        return;
+      }
+      
       if (demoMode) {
         // Demo mode simulation
         if (!isCallActive) {
@@ -564,9 +645,11 @@
             elements.callText.textContent = 'End Call';
             elements.transcriptContainer.classList.add('show');
             
-            // Add demo transcript
-            const transcriptDiv = document.getElementById('fluvio-transcript');
-            transcriptDiv.textContent = 'Demo Mode: This is a simulation.\n\nIn production, this would show real-time conversation transcripts between you and the AI agent.\n\nThe actual voice calls work with your Retell AI agent when the SDK loads properly.';
+            // Add demo transcript only if enabled
+            if (transcriptEnabled) {
+              const transcriptDiv = document.getElementById('fluvio-transcript');
+              transcriptDiv.textContent = 'Demo Mode: This is a simulation.\n\nIn production, this would show real-time conversation transcripts between you and the AI agent.\n\nThe actual voice calls work with your Retell AI agent when the SDK loads properly.';
+            }
             
             console.log('🎧 Demo: Call connected');
           }, 1500);
@@ -655,7 +738,7 @@
         console.log('🎧 Ending real call...');
         client.stopCall();
       }
-    };
+    });
 
     // Retell event listeners (only if not in demo mode)
     if (!demoMode && client) {
@@ -691,7 +774,7 @@
       });
 
       client.on('update', (update) => {
-        if (update.transcript && update.transcript.length > 0) {
+        if (transcriptEnabled && update.transcript && update.transcript.length > 0) {
           const transcriptDiv = document.getElementById('fluvio-transcript');
           const transcriptText = update.transcript
             .map(t => `${t.role === 'agent' ? 'Agent' : 'You'}: ${t.content}`)
@@ -745,10 +828,16 @@
   }
 
   // Start when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  function initWhenReady() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      // DOM is already ready, but let's wait a tick to ensure all scripts are loaded
+      setTimeout(init, 0);
+    }
   }
+
+  // Call initialization
+  initWhenReady();
 
 })();

@@ -218,15 +218,16 @@
 🎧 Fluvio Universal Widget ready!
 🎧 Starting real call...
 🎧 Dynamic variables included: {
-  "company_name": "FluvioAI Mortgage Company",
-  "AI_agent": "Sarah",
-  "AI_agent_title": "Mortgage Specialist",
-  "company_number": "1-800-MORTGAGE",
-  "company_hours": "Monday-Friday 9am-6pm EST",
-  "company_address": "123 Finance Street, Toronto, ON",
-  "greeting": "Hi! I'm {{AI_agent}}, your {{AI_agent_title}} at {{company_name}}..."
+  "company_contact": "Av Utukuri",
+  "company_contact_title": "Head of Sales",
+  "company_number": "12894014100",
+  "company_hours": "Weekdays 9 to 5PM, Closed on Saturdays and Sundays",
+  "AI_agent": "Marissa",
+  "AI_agent_title": "Technical Sales Specialist",
+  "company_name": "FluvioAI",
+  "greeting": "Hi, this is {{AI_agent}} at {{company_name}}. You can speak to me in over 35 languages..."
 }
-🎧 Starting call with options: { accessToken: "...", retellLLMDynamicVariables: {...} }
+🎧 Starting call with options: { accessToken: "...", retell_llm_dynamic_variables: {...} }
 🎧 Call started
             </div>
         </div>
@@ -264,14 +265,7 @@
     <!-- DYNAMIC VARIABLES TEST WIDGET -->
     <script src="fluvio-universal-widget.js" 
             data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
-            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"
-            data-company-name="FluvioAI Mortgage Company"
-            data-agent-name="Sarah"
-            data-agent-title="Mortgage Specialist"
-            data-company-number="1-800-MORTGAGE"
-            data-company-hours="Monday-Friday 9am-6pm EST"
-            data-company-address="123 Finance Street, Toronto, ON"
-            data-greeting="Hi! I'm {{AI_agent}}, your {{AI_agent_title}} at {{company_name}}. Ready to get pre-approved for your dream home?"></script>
+            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"></script>
 
     <script>
         function openConsole() {

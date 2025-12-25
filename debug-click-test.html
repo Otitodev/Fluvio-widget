@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Click Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 2rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-log {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .fluvio-call-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Click Debug Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Standard Button Test</h2>
+        <p>This button should work on first click:</p>
+        <button class="test-button" onclick="logEvent('Standard button clicked')">Standard Button</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Fluvio Button Widget Test</h2>
+        <p>This button uses the Fluvio widget - test if first click works:</p>
+        <button class="fluvio-call-btn" 
+                data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+                data-agent-id="agent_a4cb9032ec31e009d34b9be1a4">
+            Fluvio Call Button
+        </button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Universal Widget Test</h2>
+        <p>Look for the floating button in bottom-right corner and test first click.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Debug Log</h2>
+        <div id="debug-log" class="debug-log">
+            Debug log will appear here...<br>
+        </div>
+        <button class="test-button" onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        // Debug logging function
+        function logEvent(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const log = document.getElementById('debug-log');
+            log.innerHTML += `[${timestamp}] ${message}<br>`;
+            log.scrollTop = log.scrollHeight;
+            console.log(`[DEBUG] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('debug-log').innerHTML = 'Debug log cleared...<br>';
+        }
+
+        // Monitor all clicks on the page
+        document.addEventListener('click', function(e) {
+            logEvent(`Click detected on: ${e.target.tagName} with classes: ${e.target.className}`);
+        }, true); // Use capture phase
+
+        // Monitor widget loading
+        logEvent('Page loaded, monitoring clicks...');
+        
+        // Check for widget elements periodically
+        let checkCount = 0;
+        const checkInterval = setInterval(() => {
+            checkCount++;
+            
+            // Check for button widget
+            const fluvioButtons = document.querySelectorAll('.fluvio-call-btn');
+            if (fluvioButtons.length > 0) {
+                logEvent(`Found ${fluvioButtons.length} Fluvio button(s)`);
+                
+                fluvioButtons.forEach((btn, index) => {
+                    const hasListener = btn.hasAttribute('data-fluvio-initialized');
+                    logEvent(`Button ${index + 1}: initialized=${hasListener}`);
+                });
+            }
+            
+            // Check for universal widget
+            const fab = document.getElementById('fluvio-fab');
+            const panel = document.getElementById('fluvio-panel');
+            
+            if (fab && panel) {
+                logEvent('Universal widget elements found (FAB + Panel)');
+            } else if (fab) {
+                logEvent('Universal widget FAB found, but no panel');
+            }
+            
+            // Stop checking after 10 seconds
+            if (checkCount >= 20) {
+                clearInterval(checkInterval);
+                logEvent('Stopped monitoring widget loading');
+            }
+        }, 500);
+
+        // Log when widgets are supposed to be loaded
+        setTimeout(() => {
+            logEvent('Widgets should be loaded by now...');
+        }, 3000);
+    </script>
+
+    <!-- Load both widgets for testing -->
+    <script src="fluvio-button-widget.js"></script>
+    <script src="fluvio-universal-widget.js" 
+            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"
+            data-color="#ff6b35"
+            data-title="Debug Widget"></script>
+</body>
+</html>
